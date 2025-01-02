@@ -69,6 +69,11 @@ install_nushell() {
 # Main Script
 
 main() {
+  if [ -f /usr/local/bin/nu ]; then
+    echo "nu is already installed in /usr/local/bin."
+    exit 0
+  fi
+
   echo "Fetching the latest nushell version..."
   VERSION=$(get_latest_version)
 
@@ -83,7 +88,10 @@ main() {
   install_nushell "${VERSION}" "${ARCH}"
 
   echo "nushell ${VERSION} installed successfully."
-  echo "To remove nu, simply rm it from /usr/local/bin/"
+  echo "Run 'nu' to start nushell"
+  echo "To remove nu, run the following commands:"
+  echo "  rm /usr/local/bin/nu"
+  echo "  rm -rf ~/.config/nushell"
 }
 
 main
