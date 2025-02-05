@@ -63,7 +63,50 @@ install_nushell() {
 
   echo "Cleaning up..."
   rm "${file}"
-  rm -rf "nu-${version}-${arch}"
+  rm -rf "${folder}"
+}
+
+add_shell_config() {
+  local shell_config
+
+  if [ -w "$HOME/.bashrc" ]; then
+    shell_config="$HOME/.bashrc"
+  elif [ -w "$HOME/.profile" ]; then
+    shell_config="$HOME/.profile"
+  else
+    echo "No writable shell config found. Please add 'nu' manually."
+    return 1
+  fi
+
+  # Only add alias if it's not already there
+  if ! grep -x "nu" "$shell_config"; then
+    echo "nu" >>"$shell_config"
+    echo "Added nushell in $shell_config"
+  else
+    echo "nushell already set in $shell_config"
+  fi
+}
+
+remove_shell_config() {
+  local shell_config
+
+  if [ -w "$HOME/.bashrc" ]; then
+    shell_config="$HOME/.bashrc"
+  elif [ -w "$HOME/.profile" ]; then
+    shell_config="$HOME/.profile"
+  else
+    echo "No writable shell config found."
+    return 1
+  fi
+
+  sed -i '/^nu/d' "$shell_config"
+  echo "Removed nu from $shell_config"
+}
+
+print_msg() {
+  echo "To remove nu, run the following commands:"
+  echo "  rm /usr/local/bin/nu"
+  echo "  rm -rf ~/.config/nushell"
 }
 
 # Main Script
@@ -71,6 +114,14 @@ install_nushell() {
 main() {
   if [ -f /usr/local/bin/nu ]; then
     echo "nu is already installed in /usr/local/bin."
+    read -p "Do you want to remove the existing nushell installation? [y/N]: " response
+    case "$response" in [yY])
+      echo "Removing existing nushell..."
+      sudo rm /usr/local/bin/nu
+      rm -rf "$HOME/.config/nushell"
+      remove_shell_config
+      ;;
+    esac
     exit 0
   fi
 
@@ -88,10 +139,8 @@ main() {
   install_nushell "${VERSION}" "${ARCH}"
 
   echo "nushell ${VERSION} installed successfully."
-  echo "Run 'nu' to start nushell"
-  echo "To remove nu, run the following commands:"
-  echo "  rm /usr/local/bin/nu"
-  echo "  rm -rf ~/.config/nushell"
+  add_shell_config
+  print_msg
 }
 
 main
