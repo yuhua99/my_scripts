@@ -114,7 +114,7 @@ print_msg() {
 main() {
   if [ -f /usr/local/bin/nu ]; then
     echo "nu is already installed in /usr/local/bin."
-    read -p "Do you want to remove the existing nushell installation? [y/N]: " response
+    read -r -p "Do you want to remove the existing nushell installation? [y/N]: " response </dev/tty
     case "$response" in [yY])
       echo "Removing existing nushell..."
       sudo rm /usr/local/bin/nu
