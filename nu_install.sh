@@ -73,12 +73,15 @@ add_shell_config() {
     shell_config="$HOME/.bashrc"
   elif [ -w "$HOME/.profile" ]; then
     shell_config="$HOME/.profile"
+  elif ! [ -e "$HOME/.profile" ]; then
+    touch "$HOME/.profile" && shell_config="$HOME/.profile"
+    echo "Created new shell config file at $HOME/.profile"
   else
     echo "No writable shell config found. Please add 'nu' manually."
     return 1
   fi
 
-  # Only add alias if it's not already there
+  # check if nu exists
   if ! grep -x "nu" "$shell_config"; then
     echo "nu" >>"$shell_config"
     echo "Added nushell in $shell_config"
