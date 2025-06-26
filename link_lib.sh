@@ -3,8 +3,6 @@
 # This script finds the MergedDir of a Docker container and creates multiple symlinks.
 
 # --- Configuration ---
-LINK_TARGET_DIR="/tmp/bar"
-
 # Define sources as an array. Each element is "source_subdirectory target_filename".
 # The source_subdirectory is the path inside the container's filesystem.
 # The target_filename will be created as a symlink under LINK_TARGET_DIR.
@@ -14,6 +12,16 @@ SOURCES=(
 )
 
 # --- Main Logic ---
+
+# Determine target directory from argument or user prompt
+if [ -n "$1" ]; then
+    LINK_TARGET_DIR="$1"
+    echo "Using target directory from argument: $LINK_TARGET_DIR"
+else
+    read -p "Enter target directory [/tmp/syno_include]: " user_input
+    # Use the user's input, or the default if the input is empty
+    LINK_TARGET_DIR="${user_input:-/tmp/syno_include}"
+fi
 
 # Get running container names into an array
 mapfile -t running_containers < <(docker ps --format "{{.Names}}")
