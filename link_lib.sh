@@ -3,7 +3,6 @@
 # This script finds the MergedDir of a Docker container and creates multiple symlinks.
 
 # --- Configuration ---
-CONTAINER_NAME="$1"
 LINK_TARGET_DIR="/tmp/bar"
 
 # Define sources as an array. Each element is "source_subdirectory target_filename".
@@ -16,12 +15,25 @@ SOURCES=(
 
 # --- Main Logic ---
 
-# Check if a container name was provided
-if [ -z "$CONTAINER_NAME" ]; then
-    echo "Error: No container name provided."
-    echo "Usage: $0 <container_name>"
+# Get running container names into an array
+mapfile -t running_containers < <(docker ps --format "{{.Names}}")
+
+# Check if any containers are running
+if [ ${#running_containers[@]} -eq 0 ]; then
+    echo "Error: No running Docker containers found."
     exit 1
 fi
+
+# Ask user to select a container
+echo "Please select a container to link libraries from:"
+select container_choice in "${running_containers[@]}"; do
+    if [[ -n "$container_choice" ]]; then
+        CONTAINER_NAME="$container_choice"
+        break
+    else
+        echo "Invalid selection. Please try again."
+    fi
+done
 
 echo "Inspecting container: $CONTAINER_NAME"
 
