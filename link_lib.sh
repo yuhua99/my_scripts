@@ -18,7 +18,7 @@ if [ -n "$1" ]; then
     LINK_TARGET_DIR="$1"
     echo "Using target directory from argument: $LINK_TARGET_DIR"
 else
-    read -p "Enter target directory [/tmp/syno_include]: " user_input
+    read -p "Enter target directory [/tmp/syno_include]: " user_input </dev/tty
     # Use the user's input, or the default if the input is empty
     LINK_TARGET_DIR="${user_input:-/tmp/syno_include}"
 fi
@@ -41,7 +41,7 @@ select container_choice in "${running_containers[@]}"; do
     else
         echo "Invalid selection. Please try again."
     fi
-done
+done </dev/tty
 
 echo "Inspecting container: $CONTAINER_NAME"
 
