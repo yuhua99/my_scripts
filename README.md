@@ -33,7 +33,7 @@ This script finds the `MergedDir` of a Docker container and creates symbolic lin
 
 1.  Run the script:
     ```bash
-    curl -sSfL https://raw.githubusercontent.com/yuhua99/my_scripts/refs/heads/main/link-lib.sh | bash
+    curl -sSfL https://raw.githubusercontent.com/yuhua99/my_scripts/refs/heads/main/link_lib.sh | bash
     ```
 2.  The script will prompt you to enter a target directory for the symbolic links. The default is `/tmp/syno_include`.
 3.  It will then list the running Docker containers and ask you to select one.
@@ -44,4 +44,3 @@ You can also provide the target directory as an argument:
 ```bash
 ./link_lib.sh /path/to/your/target/directory
 ```
-
