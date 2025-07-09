@@ -48,7 +48,7 @@ install_shell() {
 
   echo "Extracting ${file}..."
   mkdir -p "${folder}"
-  tar -xJf "${file} -C ${folder}/"
+  tar -xJf "${file}" -C "${folder}"
 
   echo "Installing fish shell..."
   sudo mv ${folder}/fish /usr/local/bin/
@@ -120,7 +120,7 @@ main() {
     exit 0
   fi
 
-  echo "Fetching the latest nushell version..."
+  echo "Fetching the latest fish-shell version..."
   VERSION=$(get_latest_version)
 
   echo "Latest version: ${VERSION}"
