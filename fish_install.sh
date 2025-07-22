@@ -88,20 +88,27 @@ EOF
   echo -e "${GREEN}Added missing paths to fish configuration${NC}"
 }
 
-remove_shell_config() {
-  local shell_config
+revert_fish_changes() {
+  # Remove fish from /etc/shells
+  echo -e "${YELLOW}Removing fish from /etc/shells...${NC}"
+  sudo sed -i '\|^/usr/local/bin/fish$|d' /etc/shells
+  echo -e "${GREEN}Fish removed from /etc/shells${NC}"
+}
 
-  if [ -w "$HOME/.bashrc" ]; then
-    shell_config="$HOME/.bashrc"
-  elif [ -w "$HOME/.profile" ]; then
-    shell_config="$HOME/.profile"
-  else
-    echo -e "${RED}No writable shell config found.${NC}"
-    return 1
+restore_user_shell() {
+  local current_user
+  current_user=$(whoami)
+
+  # Get current shell from /etc/shells (prefer bash, then sh)
+  local default_shell="/bin/bash"
+  if ! grep -q "^/bin/bash$" /etc/shells; then
+    default_shell="/bin/sh"
   fi
 
-  sed -i '/^fish/d' "$shell_config"
-  echo -e "${GREEN}Removed fish from $shell_config${NC}"
+  echo -e "${YELLOW}Restoring default shell to $default_shell for $current_user...${NC}"
+  # Restore user's shell to default in /etc/passwd
+  sudo sed -i "s|^$current_user:.*:/usr/local/bin/fish$|$current_user:x:$(id -u):$(id -g):$current_user:/home/$current_user:$default_shell|" /etc/passwd
+  echo -e "${GREEN}Default shell restored to $default_shell${NC}"
 }
 
 print_msg() {
@@ -122,11 +129,14 @@ main() {
   if [ -f /usr/local/bin/fish ]; then
     echo -e "${YELLOW}fish is already installed in /usr/local/bin.${NC}"
     read -r -p "Do you want to remove the existing fish-shell installation? [y/N]: " response </dev/tty
-    case "$response" in [yY])
+    case "$response" in
+    [yY])
       echo -e "${YELLOW}Removing existing fish-shell...${NC}"
       sudo rm /usr/local/bin/fish
       rm -rf "$HOME/.config/fish"
-      remove_shell_config
+      revert_fish_changes
+      restore_user_shell
+      echo -e "${GREEN}Fish shell completely removed and system restored.${NC}"
       ;;
     esac
     exit 0
