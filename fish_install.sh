@@ -64,27 +64,28 @@ install_shell() {
 }
 
 add_shell_config() {
-  local shell_config
+  local current_user
+  current_user=$(whoami)
 
-  if [ -w "$HOME/.bashrc" ]; then
-    shell_config="$HOME/.bashrc"
-  elif [ -w "$HOME/.profile" ]; then
-    shell_config="$HOME/.profile"
-  elif ! [ -e "$HOME/.profile" ]; then
-    touch "$HOME/.profile" && shell_config="$HOME/.profile"
-    echo -e "${GREEN}Created new shell config file at $HOME/.profile${NC}"
-  else
-    echo -e "${RED}No writable shell config found. Please add 'fish' manually.${NC}"
-    return 1
-  fi
+  # Add fish to available shells
+  echo -e "${YELLOW}Adding fish to available shells...${NC}"
+  echo '/usr/local/bin/fish' | sudo tee -a /etc/shells
 
-  # check if nu exists
-  if ! grep -x "fish" "$shell_config"; then
-    echo "fish" >>"$shell_config"
-    echo -e "${GREEN}Added fish-shell in $shell_config${NC}"
-  else
-    echo -e "${YELLOW}fish-shell already set in $shell_config${NC}"
-  fi
+  # Change user's default shell in /etc/passwd
+  echo -e "${YELLOW}Changing default shell to fish for $current_user...${NC}"
+  sudo sed -i "s|^$current_user:.*:/bin/.*|$current_user:x:$(id -u):$(id -g):$current_user:/home/$current_user:/usr/local/bin/fish|" /etc/passwd
+
+  # Create fish config directory and add missing paths
+  echo -e "${YELLOW}Setting up fish configuration...${NC}"
+  mkdir -p "$HOME/.config/fish"
+
+  # Add missing paths permanently to fish config
+  cat >>"$HOME/.config/fish/config.fish" <<'EOF'
+# Add missing PATH directories
+fish_add_path --global /sbin /usr/syno/sbin /usr/syno/bin /usr/local/sbin /usr/local/bin
+EOF
+
+  echo -e "${GREEN}Added missing paths to fish configuration${NC}"
 }
 
 remove_shell_config() {
@@ -112,6 +113,12 @@ print_msg() {
 # Main Script
 
 main() {
+  # Check if $HOME exists
+  if [ -z "$HOME" ] || [ ! -d "$HOME" ]; then
+    echo -e "${RED}Error: \$HOME directory does not exist or is not set.${NC}"
+    echo -e "${RED}Please ensure your home directory is properly configured.${NC}"
+    exit 1
+  fi
   if [ -f /usr/local/bin/fish ]; then
     echo -e "${YELLOW}fish is already installed in /usr/local/bin.${NC}"
     read -r -p "Do you want to remove the existing fish-shell installation? [y/N]: " response </dev/tty
